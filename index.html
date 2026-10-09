@@ -1,0 +1,3303 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<title>BACKROOMS — Level 0</title>
+
+<style>
+*{box-sizing:border-box}
+
+html,body{
+    margin:0;
+    width:100%;
+    height:100%;
+    overflow:hidden;
+    background:#050505;
+    color:#fff;
+    font-family:Arial,sans-serif;
+    touch-action:none
+}
+
+#game{
+    position:fixed;
+    inset:0
+}
+
+canvas{
+    display:block;
+    width:100%;
+    height:100%
+}
+
+/* HUD */
+
+#hud{
+    position:fixed;
+    inset:0;
+    pointer-events:none;
+    z-index:5
+}
+
+#stats{
+    position:absolute;
+    left:14px;
+    top:12px;
+    font-size:12px;
+    text-shadow:0 1px 3px #000
+}
+
+.bar{
+    width:180px;
+    height:13px;
+    background:#222;
+    border:1px solid #777;
+    margin:4px 0
+}
+
+.fill{
+    height:100%;
+    width:100%;
+    transition:width .15s
+}
+
+.hp{
+    background:#b51d1d
+}
+
+.st{
+    background:#d0b020
+}
+
+.bat{
+    background:#3b9bdb
+}
+
+.label{
+    margin-top:4px
+}
+
+#objective{
+    position:absolute;
+    top:14px;
+    left:50%;
+    transform:translateX(-50%);
+    font-size:14px;
+    text-align:center;
+    text-shadow:0 1px 4px #000;
+    max-width:70vw
+}
+
+#inventory{
+    position:absolute;
+    right:14px;
+    top:14px;
+    text-align:right;
+    font-size:13px;
+    text-shadow:0 1px 4px #000
+}
+
+#crosshair{
+    position:absolute;
+    left:50%;
+    top:50%;
+    width:10px;
+    height:10px;
+    transform:translate(-50%,-50%);
+    border:1px solid rgba(255,255,255,.8);
+    border-radius:50%
+}
+
+#message{
+    position:absolute;
+    left:50%;
+    bottom:12%;
+    transform:translateX(-50%);
+    font-size:15px;
+    text-align:center;
+    text-shadow:0 2px 6px #000;
+    max-width:85vw
+}
+
+#hiddenText{
+    position:absolute;
+    left:50%;
+    top:78%;
+    transform:translateX(-50%);
+    font-size:14px;
+    color:#ddd;
+    text-shadow:0 2px 5px #000;
+    display:none
+}
+
+/* MENÜLER */
+
+#start,
+#death,
+#codePanel,
+#portrait{
+    position:fixed;
+    inset:0;
+    z-index:20;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    background:rgba(0,0,0,.9);
+    text-align:center
+}
+
+.box{
+    width:min(520px,90vw);
+    padding:28px;
+    border:1px solid #555;
+    background:rgba(15,15,15,.95);
+    box-shadow:0 0 50px #000
+}
+
+.box h1{
+    margin:0 0 10px;
+    letter-spacing:5px
+}
+
+.box p{
+    color:#bbb;
+    line-height:1.5
+}
+
+.btn{
+    border:1px solid #888;
+    background:#181818;
+    color:#fff;
+    padding:13px 22px;
+    cursor:pointer;
+    font-size:15px
+}
+
+.btn:hover{
+    background:#292929
+}
+
+.hide{
+    display:none!important
+}
+
+.danger{
+    color:#d55
+}
+
+/* PC */
+
+#controlsPC{
+    position:absolute;
+    left:14px;
+    bottom:14px;
+    font-size:11px;
+    color:#aaa;
+    line-height:1.5;
+    text-shadow:0 1px 3px #000;
+    z-index:6
+}
+
+.setting{
+    margin-top:15px
+}
+
+.setting input{
+    width:100%
+}
+
+/* MOBİL */
+
+#mobile{
+    display:none;
+    position:fixed;
+    inset:0;
+    z-index:10;
+    pointer-events:none
+}
+
+.stickArea{
+    position:absolute;
+    left:20px;
+    bottom:25px;
+    width:145px;
+    height:145px;
+    border:2px solid rgba(255,255,255,.25);
+    border-radius:50%;
+    background:rgba(255,255,255,.05);
+    pointer-events:auto
+}
+
+.stick{
+    position:absolute;
+    width:62px;
+    height:62px;
+    left:41px;
+    top:41px;
+    border-radius:50%;
+    background:rgba(255,255,255,.2);
+    border:1px solid rgba(255,255,255,.5)
+}
+
+#lookArea{
+    position:absolute;
+    right:0;
+    top:0;
+    width:53%;
+    height:72%;
+    pointer-events:auto
+}
+
+.mBtns{
+    position:absolute;
+    right:15px;
+    bottom:22px;
+    display:grid;
+    grid-template-columns:repeat(2,65px);
+    gap:9px;
+    pointer-events:auto
+}
+
+.mbtn{
+    width:65px;
+    height:55px;
+    border-radius:12px;
+    border:1px solid rgba(255,255,255,.45);
+    background:rgba(20,20,20,.55);
+    color:white;
+    font-weight:bold;
+    font-size:12px
+}
+
+.mbtn:active{
+    background:rgba(255,255,255,.2)
+}
+
+#runBtn{
+    position:absolute;
+    left:180px;
+    bottom:30px;
+    width:72px;
+    height:58px;
+    border-radius:50%;
+    pointer-events:auto
+}
+
+.rotateBtns{
+    position:absolute;
+    left:50%;
+    bottom:22px;
+    transform:translateX(-50%);
+    display:flex;
+    gap:8px;
+    pointer-events:auto
+}
+
+.rotateBtns button{
+    width:55px;
+    height:48px;
+    border-radius:10px;
+    border:1px solid #777;
+    background:rgba(20,20,20,.55);
+    color:#fff;
+    font-size:20px
+}
+
+/* HORROR EFEKTLERİ */
+
+#vignette{
+    position:fixed;
+    inset:0;
+    z-index:4;
+    pointer-events:none;
+    background:radial-gradient(
+        circle,
+        transparent 35%,
+        rgba(0,0,0,.72) 100%
+    );
+    opacity:.7
+}
+
+#noise{
+    position:fixed;
+    inset:0;
+    z-index:4;
+    pointer-events:none;
+    opacity:.07;
+    background-image:repeating-linear-gradient(
+        0deg,
+        rgba(255,255,255,.15) 0 1px,
+        transparent 1px 3px
+    )
+}
+
+/* TELEFON */
+
+@media(max-width:800px){
+
+    #controlsPC{
+        display:none
+    }
+
+    #mobile{
+        display:block
+    }
+
+    #stats{
+        font-size:10px
+    }
+
+    .bar{
+        width:120px;
+        height:10px
+    }
+
+    #objective{
+        font-size:12px;
+        top:8px
+    }
+
+    .box{
+        padding:20px
+    }
+
+    .box h1{
+        font-size:25px
+    }
+}
+
+@media(orientation:portrait) and (max-width:800px){
+
+    #portrait{
+        display:flex!important
+    }
+}
+
+@media(orientation:landscape),(min-width:801px){
+
+    #portrait{
+        display:none!important
+    }
+}
+</style>
+</head>
+
+<body>
+
+<div id="game"></div>
+
+<div id="vignette"></div>
+<div id="noise"></div>
+
+<!-- HUD -->
+
+<div id="hud">
+
+    <div id="stats">
+
+        <div>CAN</div>
+
+        <div class="bar">
+            <div id="hpFill" class="fill hp"></div>
+        </div>
+
+        <div class="label">STAMINA</div>
+
+        <div class="bar">
+            <div id="stFill" class="fill st"></div>
+        </div>
+
+        <div class="label">PİL</div>
+
+        <div class="bar">
+            <div id="batFill" class="fill bat"></div>
+        </div>
+
+    </div>
+
+    <div id="objective">
+        Hazırlan...
+    </div>
+
+    <div id="inventory">
+        ANAHTAR: YOK<br>
+        KOD: ----
+    </div>
+
+    <div id="crosshair"></div>
+
+    <div id="message"></div>
+
+    <div id="hiddenText">
+        SAKLANIYORSUN — Çıkmak için ETKİLEŞ
+    </div>
+
+</div>
+
+<!-- PC KONTROLLERİ -->
+
+<div id="controlsPC">
+
+    WASD: Hareket &nbsp;
+    SHIFT: Koş &nbsp;
+    F: Fener &nbsp;
+    E: Etkileşim/Saklan &nbsp;
+    ESC: Fareyi bırak
+    <br>
+    Fare: Kamera
+
+</div>
+
+<!-- MOBİL KONTROLLER -->
+
+<div id="mobile">
+
+    <div id="lookArea"></div>
+
+    <div class="stickArea" id="stickArea">
+        <div class="stick" id="stick"></div>
+    </div>
+
+    <button class="mbtn" id="runBtn">
+        KOŞ
+    </button>
+
+    <div class="mBtns">
+
+        <button class="mbtn" id="flashBtn">
+            FENER
+        </button>
+
+        <button class="mbtn" id="interactBtn">
+            ETKİLEŞ
+        </button>
+
+        <button class="mbtn" id="leftBtn">
+            ◀
+        </button>
+
+        <button class="mbtn" id="rightBtn">
+            ▶
+        </button>
+
+    </div>
+
+    <div class="rotateBtns">
+
+        <button id="rotL">
+            ↶
+        </button>
+
+        <button id="rotR">
+            ↷
+        </button>
+
+    </div>
+
+</div>
+
+<!-- BAŞLANGIÇ -->
+
+<div id="start">
+
+    <div class="box">
+
+        <h1>BACKROOMS</h1>
+
+        <p>LEVEL 0</p>
+
+        <p>
+            Sarı koridorlarda kayboldun.
+            Anahtarı bul ve çıkış kapısını bul.
+            Ama yalnız değilsin.
+        </p>
+
+        <button class="btn" id="startBtn">
+            OYUNA BAŞLA
+        </button>
+
+        <div class="setting">
+
+            <label>
+                EKRAN KAYDIRMA HASSASİYETİ
+                <span id="sensValue">1.00</span>
+            </label>
+
+            <input
+                id="sens"
+                type="range"
+                min="0.4"
+                max="2.5"
+                step="0.05"
+                value="1"
+            >
+
+        </div>
+
+    </div>
+
+</div>
+
+<!-- TELEFON DİKEY -->
+
+<div id="portrait">
+
+    <div class="box">
+
+        <h2>
+            TELEFONU YATAY ÇEVİR
+        </h2>
+
+        <p>
+            Oyunu telefonunda yatay ekranla oyna.
+        </p>
+
+    </div>
+
+</div>
+
+<!-- ÖLÜM -->
+
+<div id="death" class="hide">
+
+    <div class="box">
+
+        <h1>ÖLDÜN</h1>
+
+        <p id="deathReason">
+            Entity seni yakaladı.
+        </p>
+
+        <button class="btn" id="restartBtn">
+            TEKRAR DENE
+        </button>
+
+    </div>
+
+</div>
+
+<!-- KOD PANELİ -->
+
+<div id="codePanel" class="hide">
+
+    <div class="box">
+
+        <h2>
+            KOD PANELİ
+        </h2>
+
+        <p>
+            4 haneli kodu gir.
+        </p>
+
+        <div
+            id="codeDisplay"
+            style="font-size:28px;letter-spacing:8px;margin:15px"
+        >
+            ----
+        </div>
+
+        <div
+            id="keypad"
+            style="
+                display:grid;
+                grid-template-columns:repeat(3,1fr);
+                gap:8px
+            "
+        ></div>
+
+        <br>
+
+        <button class="btn" id="closeCode">
+            KAPAT
+        </button>
+
+    </div>
+
+</div>
+
+<script type="module">
+
+import * as THREE from
+'https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js';
+
+import { PointerLockControls } from
+'https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/controls/PointerLockControls.js';
+
+
+/* =========================
+   THREE.JS
+========================= */
+
+const game = document.getElementById("game");
+
+const scene = new THREE.Scene();
+
+scene.background = new THREE.Color(0x11100b);
+
+scene.fog = new THREE.Fog(
+    0x11100b,
+    2,
+    38
+);
+
+const camera = new THREE.PerspectiveCamera(
+    75,
+    innerWidth / innerHeight,
+    0.05,
+    100
+);
+
+camera.position.set(
+    0,
+    1.65,
+    8
+);
+
+const renderer =
+    new THREE.WebGLRenderer({
+        antialias:true
+    });
+
+renderer.setPixelRatio(
+    Math.min(devicePixelRatio,2)
+);
+
+renderer.setSize(
+    innerWidth,
+    innerHeight
+);
+
+renderer.shadowMap.enabled = true;
+
+game.appendChild(
+    renderer.domElement
+);
+
+const controls =
+    new PointerLockControls(
+        camera,
+        document.body
+    );
+
+
+/* =========================
+   OYUNCU DURUMU
+========================= */
+
+const state = {
+
+    running:false,
+
+    level:0,
+
+    hp:100,
+
+    stamina:100,
+
+    battery:100,
+
+    hasKey:false,
+
+    code:"",
+
+    hidden:false,
+
+    flash:false,
+
+    dead:false,
+
+    lookSensitivity:1,
+
+    moveX:0,
+
+    moveZ:0,
+
+    run:false,
+
+    codeOpen:false
+
+};
+
+
+/* =========================
+   DİĞER DEĞİŞKENLER
+========================= */
+
+const keys = {};
+
+let walls = [];
+
+let pickups = [];
+
+let hides = [];
+
+let exitDoor = null;
+
+let entity = null;
+
+let note = null;
+
+let codePanelObj = null;
+
+let messageTimer = 0;
+
+let touchLookId = null;
+
+let lastTouchX = 0;
+
+let codeInput = "";
+
+const clock =
+    new THREE.Clock();
+
+
+/* =========================
+   HUD
+========================= */
+
+const ui = {
+
+    hp:
+        document.getElementById(
+            "hpFill"
+        ),
+
+    st:
+        document.getElementById(
+            "stFill"
+        ),
+
+    bat:
+        document.getElementById(
+            "batFill"
+        ),
+
+    objective:
+        document.getElementById(
+            "objective"
+        ),
+
+    inventory:
+        document.getElementById(
+            "inventory"
+        ),
+
+    message:
+        document.getElementById(
+            "message"
+        ),
+
+    hidden:
+        document.getElementById(
+            "hiddenText"
+        ),
+
+    start:
+        document.getElementById(
+            "start"
+        ),
+
+    death:
+        document.getElementById(
+            "death"
+        ),
+
+    code:
+        document.getElementById(
+            "codePanel"
+        ),
+
+    display:
+        document.getElementById(
+            "codeDisplay"
+        )
+
+};
+
+
+/* =========================
+   HUD GÜNCELLE
+========================= */
+
+function updateHUD(){
+
+    ui.hp.style.width =
+        state.hp + "%";
+
+    ui.st.style.width =
+        state.stamina + "%";
+
+    ui.bat.style.width =
+        state.battery + "%";
+
+    ui.inventory.innerHTML =
+        `ANAHTAR: ${
+            state.hasKey
+            ? "VAR"
+            : "YOK"
+        }<br>KOD: ${
+            state.code || "----"
+        }`;
+
+    ui.hidden.style.display =
+        state.hidden
+        ? "block"
+        : "none";
+}
+
+
+/* =========================
+   MESAJ
+========================= */
+
+function say(
+    text,
+    ms = 2500
+){
+
+    ui.message.textContent =
+        text;
+
+    messageTimer = ms;
+}
+
+
+/* =========================
+   MATERYAL
+========================= */
+
+function mat(color){
+
+    return new THREE.MeshStandardMaterial({
+        color,
+        roughness:.9
+    });
+
+}
+
+
+/* =========================
+   KUTU
+========================= */
+
+function box(
+    x,
+    y,
+    z,
+    w,
+    h,
+    d,
+    color = 0x777766
+){
+
+    const mesh =
+        new THREE.Mesh(
+            new THREE.BoxGeometry(
+                w,
+                h,
+                d
+            ),
+            mat(color)
+        );
+
+    mesh.position.set(
+        x,
+        y,
+        z
+    );
+
+    mesh.castShadow = true;
+
+    mesh.receiveShadow = true;
+
+    scene.add(mesh);
+
+    return mesh;
+
+}
+
+
+/* =========================
+   DUVAR
+========================= */
+
+function addWall(
+    x,
+    z,
+    w,
+    d
+){
+
+    const mesh =
+        box(
+            x,
+            1.5,
+            z,
+            w,
+            3,
+            d,
+            0x88866d
+        );
+
+    walls.push({
+
+        x,
+        z,
+        w,
+        d,
+
+        mesh
+
+    });
+
+}
+
+
+/* =========================
+   ZEMİN
+========================= */
+
+function floor(){
+
+    const f =
+        new THREE.Mesh(
+            new THREE.PlaneGeometry(
+                70,
+                70
+            ),
+            mat(0x9b9a76)
+        );
+
+    f.rotation.x =
+        -Math.PI / 2;
+
+    f.receiveShadow = true;
+
+    scene.add(f);
+
+}
+
+
+/* =========================
+   IŞIK
+========================= */
+
+function lightSetup(){
+
+    const ambient =
+        new THREE.HemisphereLight(
+            0xaaa98a,
+            0x171713,
+            .55
+        );
+
+    scene.add(ambient);
+
+    const ceiling =
+        new THREE.PointLight(
+            0xffeec0,
+            1.1,
+            20
+        );
+
+    ceiling.position.set(
+        0,
+        2.8,
+        0
+    );
+
+    scene.add(ceiling);
+
+}
+
+
+/* =========================
+   FENER
+========================= */
+
+function createFlashlight(){
+
+    const spotlight =
+        new THREE.SpotLight(
+            0xffffff,
+            0,
+            24,
+            Math.PI / 8,
+            .45,
+            1.5
+        );
+
+    spotlight.position.set(
+        0,
+        0,
+        0
+    );
+
+    spotlight.castShadow = true;
+
+    spotlight.shadow.mapSize.set(
+        512,
+        512
+    );
+
+    camera.add(
+        spotlight
+    );
+
+    const target =
+        new THREE.Object3D();
+
+    target.position.set(
+        0,
+        0,
+        -10
+    );
+
+    camera.add(target);
+
+    spotlight.target =
+        target;
+
+    return spotlight;
+
+}
+
+const flashlight =
+    createFlashlight();
+
+
+/* =========================
+   SAKLANMA ALANI
+========================= */
+
+function addHide(
+    x,
+    z,
+    rot = 0
+){
+
+    const group =
+        new THREE.Group();
+
+    group.position.set(
+        x,
+        0,
+        z
+    );
+
+    group.rotation.y =
+        rot;
+
+    const body =
+        new THREE.Mesh(
+            new THREE.BoxGeometry(
+                1.8,
+                2.4,
+                .7
+            ),
+            mat(0x252525)
+        );
+
+    body.position.y =
+        1.2;
+
+    group.add(body);
+
+    const top =
+        new THREE.Mesh(
+            new THREE.BoxGeometry(
+                2,
+                .15,
+                .9
+            ),
+            mat(0x333333)
+        );
+
+    top.position.y =
+        2.35;
+
+    group.add(top);
+
+    scene.add(group);
+
+    hides.push({
+
+        x,
+        z,
+
+        r:1.7
+
+    });
+
+}
+
+
+/* =========================
+   PICKUP
+========================= */
+
+function addPickup(
+    type,
+    x,
+    z
+){
+
+    let color;
+
+    if(type === "key")
+        color = 0xffd000;
+
+    else if(type === "med")
+        color = 0xdd2222;
+
+    else
+        color = 0x3aaaff;
+
+    const mesh =
+        new THREE.Mesh(
+            new THREE.BoxGeometry(
+                .35,
+                .35,
+                .35
+            ),
+            mat(color)
+        );
+
+    mesh.position.set(
+        x,
+        .3,
+        z
+    );
+
+    scene.add(mesh);
+
+    pickups.push({
+
+        type,
+
+        mesh
+
+    });
+
+}
+
+
+/* =========================
+   ÇIKIŞ KAPISI
+========================= */
+
+function addExit(
+    x,
+    z
+){
+
+    const door =
+        box(
+            x,
+            1.4,
+            z,
+            1.5,
+            2.8,
+            .25,
+            0x181818
+        );
+
+    exitDoor = {
+
+        mesh:door,
+
+        x,
+
+        z
+
+    };
+
+}
+
+
+/* =========================
+   ENTITY
+========================= */
+
+function addEntity(
+    x,
+    z
+){
+
+    const group =
+        new THREE.Group();
+
+    group.position.set(
+        x,
+        0,
+        z
+    );
+
+    const body =
+        new THREE.Mesh(
+            new THREE.BoxGeometry(
+                .8,
+                2.2,
+                .55
+            ),
+            mat(0x171717)
+        );
+
+    body.position.y =
+        1.1;
+
+    group.add(body);
+
+    const head =
+        new THREE.Mesh(
+            new THREE.BoxGeometry(
+                .55,
+                .55,
+                .55
+            ),
+            mat(0x090909)
+        );
+
+    head.position.y =
+        2.35;
+
+    group.add(head);
+
+    scene.add(group);
+
+    entity = {
+
+        group,
+
+        speed:1.75,
+
+        active:true
+
+    };
+
+}
+
+
+/* =========================
+   NOT
+========================= */
+
+function addNote(
+    x,
+    z
+){
+
+    const n =
+        box(
+            x,
+            .9,
+            z,
+            .65,
+            .03,
+            .5,
+            0xd6d0a2
+        );
+
+    note = n;
+
+}
+
+
+/* =========================
+   KOD PANELİ
+========================= */
+
+function addCodePanel(
+    x,
+    z
+){
+
+    const panel =
+        box(
+            x,
+            1.35,
+            z,
+            .7,
+            1.3,
+            .18,
+            0x252525
+        );
+
+    codePanelObj =
+        panel;
+
+}
+
+
+/* =========================
+   DÜNYAYI TEMİZLE
+========================= */
+
+function clearWorld(){
+
+    while(
+        scene.children.length
+    ){
+
+        scene.remove(
+            scene.children[0]
+        );
+
+    }
+
+    walls = [];
+
+    pickups = [];
+
+    hides = [];
+
+    exitDoor = null;
+
+    entity = null;
+
+    note = null;
+
+    codePanelObj = null;
+
+    state.hidden = false;
+
+}
+
+
+/* =========================
+   LEVEL 0
+========================= */
+
+function level0(){
+
+    clearWorld();
+
+    floor();
+
+    lightSetup();
+
+    camera.position.set(
+        0,
+        1.65,
+        8
+    );
+
+    camera.rotation.set(
+        0,
+        Math.PI,
+        0
+    );
+
+    state.level = 0;
+
+    state.hasKey = false;
+
+    state.code = "";
+
+    /* DIŞ DUVARLAR */
+
+    addWall(
+        0,
+        -8,
+        18,
+        .5
+    );
+
+    addWall(
+        -9,
+        0,
+        .5,
+        16
+    );
+
+    addWall(
+        9,
+        0,
+        .5,
+        16
+    );
+
+    addWall(
+        0,
+        8,
+        18,
+        .5
+    );
+
+    /* İÇ DUVARLAR */
+
+    addWall(
+        -5,
+        -2,
+        .5,
+        8
+    );
+
+    addWall(
+        2,
+        -3,
+        8,
+        .5
+    );
+
+    addWall(
+        5,
+        3,
+        .5,
+        7
+    );
+
+    addWall(
+        -2,
+        5,
+        7,
+        .5
+    );
+
+    /* EŞYALAR */
+
+    addPickup(
+        "key",
+        6,
+        6
+    );
+
+    addPickup(
+        "battery",
+        -6,
+        5
+    );
+
+    addPickup(
+        "med",
+        -6,
+        -6
+    );
+
+    /* SAKLANMA */
+
+    addHide(
+        -7,
+        5
+    );
+
+    addHide(
+        6,
+        -5
+    );
+
+    /* ÇIKIŞ */
+
+    addExit(
+        7,
+        0
+    );
+
+    /* ENTITY */
+
+    addEntity(
+        -6,
+        -5
+    );
+
+    ui.objective.textContent =
+        "ANAHTARI BUL → ÇIKIŞ KAPISINI ARA";
+
+    say(
+        "Bir şeyler burada dolaşıyor...",
+        3000
+    );
+
+}
+
+
+/* =========================
+   LEVEL 1
+========================= */
+
+function level1(){
+
+    clearWorld();
+
+    floor();
+
+    lightSetup();
+
+    camera.position.set(
+        -7,
+        1.65,
+        6
+    );
+
+    camera.rotation.set(
+        0,
+        0,
+        0
+    );
+
+    state.level = 1;
+
+    state.hasKey = false;
+
+    state.code = "";
+
+    /* DUVARLAR */
+
+    addWall(
+        0,
+        -8,
+        18,
+        .5
+    );
+
+    addWall(
+        -9,
+        0,
+        .5,
+        16
+    );
+
+    addWall(
+        9,
+        0,
+        .5,
+        16
+    );
+
+    addWall(
+        0,
+        8,
+        18,
+        .5
+    );
+
+    addWall(
+        -4,
+        -2,
+        .5,
+        8
+    );
+
+    addWall(
+        3,
+        -3,
+        7,
+        .5
+    );
+
+    addWall(
+        5,
+        3,
+        .5,
+        7
+    );
+
+    addWall(
+        -1,
+        5,
+        8,
+        .5
+    );
+
+    /* EŞYALAR */
+
+    addPickup(
+        "battery",
+        -6,
+        5
+    );
+
+    addPickup(
+        "med",
+        6,
+        6
+    );
+
+    addPickup(
+        "key",
+        -6,
+        -5
+    );
+
+    /* SAKLANMA */
+
+    addHide(
+        6,
+        -5
+    );
+
+    addHide(
+        -6,
+        1
+    );
+
+    /* NOT */
+
+    addNote(
+        1,
+        1
+    );
+
+    /* KOD PANELİ */
+
+    addCodePanel(
+        4,
+        1
+    );
+
+    /* ÇIKIŞ */
+
+    addExit(
+        7,
+        0
+    );
+
+    /* ENTITY */
+
+    addEntity(
+        -6,
+        -5
+    );
+
+    ui.objective.textContent =
+        "NOTU BUL → KODU ÖĞREN → ÇIKIŞI AÇ";
+
+    say(
+        "Duvarlarda yeni bir katın kokusu var.",
+        2500
+    );
+
+}
+
+
+/* =========================
+   DUVAR ÇARPIŞMASI
+========================= */
+
+function collides(
+    pos
+){
+
+    const r = .35;
+
+    for(
+        const w of walls
+    ){
+
+        if(
+            pos.x >
+                w.x - w.w/2 - r &&
+
+            pos.x <
+                w.x + w.w/2 + r &&
+
+            pos.z >
+                w.z - w.d/2 - r &&
+
+            pos.z <
+                w.z + w.d/2 + r
+        ){
+
+            return true;
+
+        }
+
+    }
+
+    return false;
+
+}
+
+
+/* =========================
+   HAREKET
+========================= */
+
+function tryMove(
+    dx,
+    dz
+){
+
+    const p =
+        camera.position.clone();
+
+    p.x += dx;
+
+    if(
+        !collides(p)
+    ){
+
+        camera.position.x =
+            p.x;
+
+    }
+
+    p.copy(
+        camera.position
+    );
+
+    p.z += dz;
+
+    if(
+        !collides(p)
+    ){
+
+        camera.position.z =
+            p.z;
+
+    }
+
+}
+
+
+/* =========================
+   YAKIN NESNE
+========================= */
+
+function nearest(
+    list,
+    max = 2
+){
+
+    let best = null;
+
+    let dist = max;
+
+    for(
+        const o of list
+    ){
+
+        const d =
+            Math.hypot(
+                camera.position.x -
+                    o.x,
+
+                camera.position.z -
+                    o.z
+            );
+
+        if(
+            d < dist
+        ){
+
+            dist = d;
+
+            best = o;
+
+        }
+
+    }
+
+    return best;
+
+}
+
+
+/* =========================
+   ETKİLEŞİM
+========================= */
+
+function interact(){
+
+    if(
+        !state.running ||
+        state.dead
+    ){
+
+        return;
+
+    }
+
+
+    /* SAKLANMADAN ÇIK */
+
+    if(
+        state.hidden
+    ){
+
+        state.hidden = false;
+
+        say(
+            "Saklandığın yerden çıktın."
+        );
+
+        return;
+
+    }
+
+
+    /* SAKLAN */
+
+    const h =
+        nearest(
+            hides,
+            1.8
+        );
+
+    if(h){
+
+        state.hidden = true;
+
+        say(
+            "SAKLANDIN. Entity seni göremez."
+        );
+
+        return;
+
+    }
+
+
+    /* PICKUP */
+
+    const p =
+        nearest(
+            pickups,
+            1.5
+        );
+
+    if(p){
+
+        if(
+            p.type === "key"
+        ){
+
+            state.hasKey = true;
+
+            say(
+                "Anahtarı aldın."
+            );
+
+        }
+
+        else if(
+            p.type === "med"
+        ){
+
+            state.hp =
+                Math.min(
+                    100,
+                    state.hp + 35
+                );
+
+            say(
+                "İlk yardım çantası kullanıldı."
+            );
+
+        }
+
+        else{
+
+            state.battery =
+                Math.min(
+                    100,
+                    state.battery + 45
+                );
+
+            say(
+                "Pil aldın."
+            );
+
+        }
+
+        scene.remove(
+            p.mesh
+        );
+
+        pickups.splice(
+            pickups.indexOf(p),
+            1
+        );
+
+        updateHUD();
+
+        return;
+
+    }
+
+
+    /* NOT */
+
+    if(
+        note &&
+        camera.position.distanceTo(
+            note.position
+        ) < 1.8
+    ){
+
+        state.code =
+            "0415";
+
+        say(
+            "Notta yazıyor: 0415"
+        );
+
+        updateHUD();
+
+        return;
+
+    }
+
+
+    /* KOD PANELİ */
+
+    if(
+        codePanelObj &&
+        camera.position.distanceTo(
+            codePanelObj.position
+        ) < 2
+    ){
+
+        openCode();
+
+        return;
+
+    }
+
+
+    /* ÇIKIŞ */
+
+    if(
+        exitDoor &&
+        camera.position.distanceTo(
+            exitDoor.mesh.position
+        ) < 2
+    ){
+
+        if(
+            state.level === 0
+        ){
+
+            if(
+                state.hasKey
+            ){
+
+                say(
+                    "Kapı açıldı. LEVEL 1...",
+                    1800
+                );
+
+                setTimeout(
+                    level1,
+                    1200
+                );
+
+            }
+
+            else{
+
+                say(
+                    "Kapı kilitli. Anahtar gerekli."
+                );
+
+            }
+
+        }
+
+        else{
+
+            if(
+                state.code === "0415"
+            ){
+
+                win();
+
+            }
+
+            else{
+
+                say(
+                    "Çıkış kodu gerekli."
+                );
+
+            }
+
+        }
+
+    }
+
+}
+
+
+/* =========================
+   KOD PANELİ
+========================= */
+
+function openCode(){
+
+    state.codeOpen = true;
+
+    ui.code.classList.remove(
+        "hide"
+    );
+
+    ui.display.textContent =
+        "----";
+
+    codeInput = "";
+
+}
+
+
+function closeCode(){
+
+    state.codeOpen = false;
+
+    ui.code.classList.add(
+        "hide"
+    );
+
+}
+
+
+/* =========================
+   KEYPAD
+========================= */
+
+function setupKeypad(){
+
+    const keypad =
+        document.getElementById(
+            "keypad"
+        );
+
+    keypad.innerHTML = "";
+
+    for(
+        let i = 1;
+        i <= 9;
+        i++
+    ){
+
+        const button =
+            document.createElement(
+                "button"
+            );
+
+        button.className =
+            "btn";
+
+        button.textContent =
+            i;
+
+        button.onclick =
+            () => pressCode(
+                String(i)
+            );
+
+        keypad.appendChild(
+            button
+        );
+
+    }
+
+    const zero =
+        document.createElement(
+            "button"
+        );
+
+    zero.className =
+        "btn";
+
+    zero.textContent =
+        "0";
+
+    zero.onclick =
+        () => pressCode("0");
+
+    keypad.appendChild(
+        document.createElement(
+            "span"
+        )
+    );
+
+    keypad.appendChild(
+        zero
+    );
+
+    const ok =
+        document.createElement(
+            "button"
+        );
+
+    ok.className =
+        "btn";
+
+    ok.textContent =
+        "OK";
+
+    ok.onclick =
+        () => {
+
+            if(
+                codeInput === "0415"
+            ){
+
+                state.code =
+                    "0415";
+
+                closeCode();
+
+                say(
+                    "KOD DOĞRU. ÇIKIŞ AÇILDI."
+                );
+
+            }
+
+            else{
+
+                codeInput = "";
+
+                ui.display.textContent =
+                    "----";
+
+                say(
+                    "Yanlış kod."
+                );
+
+            }
+
+        };
+
+    keypad.appendChild(
+        ok
+    );
+
+}
+
+
+function pressCode(
+    number
+){
+
+    if(
+        codeInput.length < 4
+    ){
+
+        codeInput += number;
+
+    }
+
+    ui.display.textContent =
+        codeInput.padEnd(
+            4,
+            "-"
+        );
+
+}
+
+setupKeypad();
+
+document.getElementById(
+    "closeCode"
+).onclick = closeCode;
+
+
+/* =========================
+   HASAR
+========================= */
+
+function damage(
+    amount
+){
+
+    if(
+        state.hidden ||
+        state.dead
+    ){
+
+        return;
+
+    }
+
+    state.hp =
+        Math.max(
+            0,
+            state.hp - amount
+        );
+
+    updateHUD();
+
+    if(
+        state.hp <= 0
+    ){
+
+        die(
+            "Entity seni yakaladı."
+        );
+
+    }
+
+}
+
+
+/* =========================
+   ENTITY AI
+========================= */
+
+function updateEntity(
+    dt
+){
+
+    if(
+        !entity ||
+        !entity.active ||
+        state.hidden
+    ){
+
+        return;
+
+    }
+
+    const dx =
+        camera.position.x -
+        entity.group.position.x;
+
+    const dz =
+        camera.position.z -
+        entity.group.position.z;
+
+    const distance =
+        Math.hypot(
+            dx,
+            dz
+        );
+
+    /* ENTITY GÖRÜŞ MESAFESİ */
+
+    if(
+        distance < 10
+    ){
+
+        const speed =
+            entity.speed *
+            (
+                state.run
+                ? 1.15
+                : 1
+            );
+
+        entity.group.position.x +=
+            dx / distance *
+            speed *
+            dt;
+
+        entity.group.position.z +=
+            dz / distance *
+            speed *
+            dt;
+
+    }
+
+    /* TEMAS */
+
+    if(
+        distance < .9
+    ){
+
+        damage(
+            30 * dt
+        );
+
+    }
+
+}
+
+
+/* =========================
+   FENER
+========================= */
+
+function toggleFlash(){
+
+    if(
+        state.battery <= 0
+    ){
+
+        say(
+            "Pilin bitti."
+        );
+
+        return;
+
+    }
+
+    state.flash =
+        !state.flash;
+
+    flashlight.intensity =
+        state.flash
+        ? 5
+        : 0;
+
+    say(
+        state.flash
+        ? "Fener açıldı."
+        : "Fener kapandı.",
+        900
+    );
+
+}
+
+
+/* =========================
+   ÖLÜM
+========================= */
+
+function die(
+    reason
+){
+
+    state.dead = true;
+
+    state.running = false;
+
+    document.getElementById(
+        "deathReason"
+    ).textContent =
+        reason;
+
+    ui.death.classList.remove(
+        "hide"
+    );
+
+}
+
+
+/* =========================
+   KAZANMA
+========================= */
+
+function win(){
+
+    state.running = false;
+
+    say(
+        "ÇIKIŞI BULDUN.",
+        5000
+    );
+
+    alert(
+        "LEVEL 1 TAMAMLANDI!"
+    );
+
+}
+
+
+/* =========================
+   BAŞLAT
+========================= */
+
+function start(){
+
+    state.running = true;
+
+    state.dead = false;
+
+    ui.start.classList.add(
+        "hide"
+    );
+
+    ui.death.classList.add(
+        "hide"
+    );
+
+    level0();
+
+    if(
+        innerWidth > 800
+    ){
+
+        try{
+
+            controls.lock();
+
+        }
+
+        catch(e){}
+
+    }
+
+    requestLandscape();
+
+}
+
+
+/* =========================
+   YATAY EKRAN
+========================= */
+
+function requestLandscape(){
+
+    try{
+
+        if(
+            document.documentElement
+                .requestFullscreen
+        ){
+
+            document.documentElement
+                .requestFullscreen()
+                .catch(
+                    () => {}
+                );
+
+        }
+
+        if(
+            screen.orientation &&
+            screen.orientation.lock
+        ){
+
+            screen.orientation
+                .lock("landscape")
+                .catch(
+                    () => {}
+                );
+
+        }
+
+    }
+
+    catch(e){}
+
+}
+
+
+/* =========================
+   YENİDEN BAŞLAT
+========================= */
+
+function restart(){
+
+    ui.death.classList.add(
+        "hide"
+    );
+
+    state.hp = 100;
+
+    state.stamina = 100;
+
+    state.battery = 100;
+
+    state.hasKey = false;
+
+    state.code = "";
+
+    state.dead = false;
+
+    state.running = true;
+
+    level0();
+
+}
+
+
+/* =========================
+   PC KLAVYE
+========================= */
+
+addEventListener(
+    "keydown",
+    event => {
+
+        keys[event.code] = true;
+
+        if(
+            event.code === "ShiftLeft" ||
+            event.code === "ShiftRight"
+        ){
+
+            state.run = true;
+
+        }
+
+        if(
+            event.code === "KeyF"
+        ){
+
+            toggleFlash();
+
+        }
+
+        if(
+            event.code === "KeyE"
+        ){
+
+            interact();
+
+        }
+
+        if(
+            event.code === "Escape"
+        ){
+
+            closeCode();
+
+        }
+
+    }
+);
+
+
+addEventListener(
+    "keyup",
+    event => {
+
+        keys[event.code] = false;
+
+        if(
+            event.code === "ShiftLeft" ||
+            event.code === "ShiftRight"
+        ){
+
+            state.run = false;
+
+        }
+
+    }
+);
+
+
+/* =========================
+   BAŞLAT BUTONU
+========================= */
+
+document.getElementById(
+    "startBtn"
+).onclick = start;
+
+
+/* =========================
+   RESTART
+========================= */
+
+document.getElementById(
+    "restartBtn"
+).onclick = restart;
+
+
+/* =========================
+   MOBİL KONTROLLER
+========================= */
+
+function setupMobile(){
+
+    const area =
+        document.getElementById(
+            "stickArea"
+        );
+
+    const stick =
+        document.getElementById(
+            "stick"
+        );
+
+    let stickId = null;
+
+
+    function setStick(
+        x,
+        y
+    ){
+
+        const rect =
+            area.getBoundingClientRect();
+
+        const centerX =
+            rect.left +
+            rect.width / 2;
+
+        const centerY =
+            rect.top +
+            rect.height / 2;
+
+        let dx =
+            x - centerX;
+
+        let dy =
+            y - centerY;
+
+        const length =
+            Math.hypot(
+                dx,
+                dy
+            );
+
+        const max = 52;
+
+        if(
+            length > max
+        ){
+
+            dx =
+                dx / length *
+                max;
+
+            dy =
+                dy / length *
+                max;
+
+        }
+
+        stick.style.transform =
+            `translate(${dx}px,${dy}px)`;
+
+        state.moveX =
+            dx / max;
+
+        state.moveZ =
+            dy / max;
+
+    }
+
+
+    function resetStick(){
+
+        stickId = null;
+
+        state.moveX = 0;
+
+        state.moveZ = 0;
+
+        stick.style.transform =
+            "translate(0,0)";
+
+    }
+
+
+    area.addEventListener(
+        "touchstart",
+        event => {
+
+            const touch =
+                event.changedTouches[0];
+
+            stickId =
+                touch.identifier;
+
+            setStick(
+                touch.clientX,
+                touch.clientY
+            );
+
+            event.preventDefault();
+
+        },
+        {
+            passive:false
+        }
+    );
+
+
+    area.addEventListener(
+        "touchmove",
+        event => {
+
+            for(
+                const touch
+                of event.changedTouches
+            ){
+
+                if(
+                    touch.identifier ===
+                    stickId
+                ){
+
+                    setStick(
+                        touch.clientX,
+                        touch.clientY
+                    );
+
+                }
+
+            }
+
+            event.preventDefault();
+
+        },
+        {
+            passive:false
+        }
+    );
+
+
+    area.addEventListener(
+        "touchend",
+        resetStick
+    );
+
+    area.addEventListener(
+        "touchcancel",
+        resetStick
+    );
+
+
+    /* KAMERA */
+
+    const look =
+        document.getElementById(
+            "lookArea"
+        );
+
+
+    look.addEventListener(
+        "touchstart",
+        event => {
+
+            const touch =
+                event.changedTouches[0];
+
+            touchLookId =
+                touch.identifier;
+
+            lastTouchX =
+                touch.clientX;
+
+            event.preventDefault();
+
+        },
+        {
+            passive:false
+        }
+    );
+
+
+    look.addEventListener(
+        "touchmove",
+        event => {
+
+            for(
+                const touch
+                of event.changedTouches
+            ){
+
+                if(
+                    touch.identifier ===
+                    touchLookId
+                ){
+
+                    const dx =
+                        touch.clientX -
+                        lastTouchX;
+
+                    lastTouchX =
+                        touch.clientX;
+
+                    camera.rotation.y -=
+                        dx *
+                        .006 *
+                        state.lookSensitivity;
+
+                }
+
+            }
+
+            event.preventDefault();
+
+        },
+        {
+            passive:false
+        }
+    );
+
+
+    look.addEventListener(
+        "touchend",
+        () => {
+
+            touchLookId = null;
+
+        }
+    );
+
+
+    /* KOŞ */
+
+    const runBtn =
+        document.getElementById(
+            "runBtn"
+        );
+
+
+    runBtn.addEventListener(
+        "touchstart",
+        event => {
+
+            state.run = true;
+
+            event.preventDefault();
+
+        },
+        {
+            passive:false
+        }
+    );
+
+
+    runBtn.addEventListener(
+        "touchend",
+        event => {
+
+            state.run = false;
+
+            event.preventDefault();
+
+        },
+        {
+            passive:false
+        }
+    );
+
+
+    /* BUTONLAR */
+
+    document.getElementById(
+        "flashBtn"
+    ).onclick =
+        toggleFlash;
+
+
+    document.getElementById(
+        "interactBtn"
+    ).onclick =
+        interact;
+
+
+    document.getElementById(
+        "leftBtn"
+    ).onclick =
+        () => {
+
+            camera.rotation.y +=
+                .12 *
+                state.lookSensitivity;
+
+        };
+
+
+    document.getElementById(
+        "rightBtn"
+    ).onclick =
+        () => {
+
+            camera.rotation.y -=
+                .12 *
+                state.lookSensitivity;
+
+        };
+
+
+    document.getElementById(
+        "rotL"
+    ).onclick =
+        () => {
+
+            camera.rotation.y +=
+                .25 *
+                state.lookSensitivity;
+
+        };
+
+
+    document.getElementById(
+        "rotR"
+    ).onclick =
+        () => {
+
+            camera.rotation.y -=
+                .25 *
+                state.lookSensitivity;
+
+        };
+
+}
+
+
+setupMobile();
+
+
+/* =========================
+   HASSASİYET AYARI
+========================= */
+
+const sens =
+    document.getElementById(
+        "sens"
+    );
+
+const saved =
+    localStorage.getItem(
+        "lookSensitivity"
+    );
+
+
+if(saved){
+
+    state.lookSensitivity =
+        Number(saved);
+
+    sens.value =
+        saved;
+
+    document.getElementById(
+        "sensValue"
+    ).textContent =
+        Number(saved).toFixed(2);
+
+}
+
+
+sens.oninput = () => {
+
+    state.lookSensitivity =
+        Number(
+            sens.value
+        );
+
+    document.getElementById(
+        "sensValue"
+    ).textContent =
+        state.lookSensitivity
+            .toFixed(2);
+
+    localStorage.setItem(
+        "lookSensitivity",
+        state.lookSensitivity
+    );
+
+};
+
+
+/* =========================
+   OYUNCU HAREKETİ
+========================= */
+
+function movement(
+    dt
+){
+
+    let x = 0;
+
+    let z = 0;
+
+
+    if(
+        keys.KeyW
+    )
+        z -= 1;
+
+    if(
+        keys.KeyS
+    )
+        z += 1;
+
+    if(
+        keys.KeyA
+    )
+        x -= 1;
+
+    if(
+        keys.KeyD
+    )
+        x += 1;
+
+
+    x += state.moveX;
+
+    z += state.moveZ;
+
+
+    if(
+        x || z
+    ){
+
+        const length =
+            Math.hypot(
+                x,
+                z
+            );
+
+        x /= length;
+
+        z /= length;
+
+
+        let speed =
+            state.run &&
+            state.stamina > 0
+            ? 4.2
+            : 2.4;
+
+
+        if(
+            state.run &&
+            state.stamina > 0
+        ){
+
+            state.stamina =
+                Math.max(
+                    0,
+                    state.stamina -
+                    35 * dt
+                );
+
+        }
+
+        else{
+
+            state.stamina =
+                Math.min(
+                    100,
+                    state.stamina +
+                    22 * dt
+                );
+
+        }
+
+
+        const direction =
+            new THREE.Vector3();
+
+        camera.getWorldDirection(
+            direction
+        );
+
+        direction.y = 0;
+
+        direction.normalize();
+
+
+        const right =
+            new THREE.Vector3()
+                .crossVectors(
+                    direction,
+                    camera.up
+                )
+                .normalize();
+
+
+        tryMove(
+
+            (
+                direction.x * -z +
+                right.x * x
+            ) *
+            speed *
+            dt,
+
+            (
+                direction.z * -z +
+                right.z * x
+            ) *
+            speed *
+            dt
+
+        );
+
+    }
+
+    else{
+
+        state.stamina =
+            Math.min(
+                100,
+                state.stamina +
+                28 * dt
+            );
+
+    }
+
+}
+
+
+/* =========================
+   PICKUP ANİMASYONU
+========================= */
+
+function pickupSpin(){
+
+    for(
+        const pickup of pickups
+    ){
+
+        pickup.mesh.rotation.y +=
+            .03;
+
+        pickup.mesh.position.y =
+            .35 +
+            Math.sin(
+                performance.now() *
+                .003
+            ) *
+            .08;
+
+    }
+
+}
+
+
+/* =========================
+   OYUN DÖNGÜSÜ
+========================= */
+
+function animate(){
+
+    requestAnimationFrame(
+        animate
+    );
+
+    const dt =
+        Math.min(
+            clock.getDelta(),
+            .05
+        );
+
+
+    if(
+        state.running &&
+        !state.codeOpen
+    ){
+
+        movement(dt);
+
+        updateEntity(dt);
+
+        pickupSpin();
+
+
+        /* FENER PİLİ */
+
+        if(
+            state.flash
+        ){
+
+            state.battery =
+                Math.max(
+                    0,
+                    state.battery -
+                    2.2 * dt
+                );
+
+
+            if(
+                state.battery <= 0
+            ){
+
+                state.flash = false;
+
+                flashlight.intensity =
+                    0;
+
+            }
+
+        }
+
+    }
+
+
+    /* MESAJ SÜRESİ */
+
+    if(
+        messageTimer > 0
+    ){
+
+        messageTimer -=
+            dt * 1000;
+
+
+        if(
+            messageTimer <= 0
+        ){
+
+            ui.message.textContent =
+                "";
+
+        }
+
+    }
+
+
+    updateHUD();
+
+
+    renderer.render(
+        scene,
+        camera
+    );
+
+}
+
+
+animate();
+
+
+/* =========================
+   EKRAN BOYUTU
+========================= */
+
+addEventListener(
+    "resize",
+    () => {
+
+        camera.aspect =
+            innerWidth /
+            innerHeight;
+
+        camera.updateProjectionMatrix();
+
+        renderer.setSize(
+            innerWidth,
+            innerHeight
+        );
+
+    }
+);
+
+
+/* =========================
+   RASTGELE KORKU MESAJLARI
+========================= */
+
+setInterval(
+    () => {
+
+        if(
+            state.running &&
+            !state.hidden &&
+            Math.random() < .25
+        ){
+
+            const messages = [
+
+                "Burada biri var mı?",
+
+                "Işıkları kapat...",
+
+                "Saklan.",
+
+                "Koridor değişti."
+
+            ];
+
+
+            say(
+                messages[
+                    Math.floor(
+                        Math.random() *
+                        messages.length
+                    )
+                ],
+                1800
+            );
+
+        }
+
+    },
+    9000
+);
+
+</script>
+
+</body>
+</html>
